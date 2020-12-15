@@ -40,3 +40,11 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 WORKDIR /opt/spire
 ENTRYPOINT ["/opt/spire/bin/oidc-discovery-provider"]
 CMD []
+
+# Workload API CSI Driver
+FROM scratch AS wlapi-csi-driver-scratch
+COPY --from=builder /spire/bin/wlapi-csi-driver-static /opt/spire/bin/wlapi-csi-driver
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+WORKDIR /opt/spire
+ENTRYPOINT ["/opt/spire/bin/wlapi-csi-driver"]
+CMD []

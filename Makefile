@@ -44,12 +44,14 @@ help:
 	@echo "  $(cyan)spire-agent-image$(reset)                     - build SPIRE agent Docker image"
 	@echo "  $(cyan)k8s-workload-registrar-image$(reset)          - build Kubernetes Workload Registrar Docker image"
 	@echo "  $(cyan)oidc-discovery-provider-image$(reset)         - build OIDC Discovery Provider Docker image"
+	@echo "  $(cyan)wlapi-csi-driver-image$(reset)                - build Workload API CSI Driver Docker image"
 	@echo "$(bold)Docker from scratch image:$(reset)"
 	@echo "  $(cyan)scratch-images$(reset)                        - build all SPIRE Docker from scratch images"
 	@echo "  $(cyan)spire-server-scratch-image$(reset)            - build SPIRE server Docker scratch image"
 	@echo "  $(cyan)spire-agent-scratch-image$(reset)             - build SPIRE agent Docker scratch image"
 	@echo "  $(cyan)k8s-workload-registrar-scratch-image$(reset)  - build Kubernetes Workload Registrar Docker scratch image"
 	@echo "  $(cyan)oidc-discovery-provider-scratch-image$(reset) - build OIDC Discovery Provider Docker image"
+	@echo "  $(cyan)wlapi-csi-driver-scratch-image$(reset)        - build Workload API CSI Driver Docker image"
 	@echo "$(bold)Developer support:$(reset)"
 	@echo "  $(cyan)dev-image$(reset)                             - build the development Docker image"
 	@echo "  $(cyan)dev-shell$(reset)                             - run a shell in a development Docker container"
@@ -244,7 +246,7 @@ go_ldflags := '${go_ldflags}'
 
 .PHONY: build
 
-build: tidy bin/spire-server bin/spire-agent bin/k8s-workload-registrar bin/oidc-discovery-provider
+build: tidy bin/spire-server bin/spire-agent bin/k8s-workload-registrar bin/oidc-discovery-provider bin/wlapi-csi-driver
 
 define binary_rule
 .PHONY: $1
@@ -258,6 +260,7 @@ $(eval $(call binary_rule,bin/spire-server,./cmd/spire-server))
 $(eval $(call binary_rule,bin/spire-agent,./cmd/spire-agent))
 $(eval $(call binary_rule,bin/k8s-workload-registrar,./support/k8s/k8s-workload-registrar))
 $(eval $(call binary_rule,bin/oidc-discovery-provider,./support/oidc-discovery-provider))
+$(eval $(call binary_rule,bin/wlapi-csi-driver,./support/k8s/wlapi-csi-driver))
 
 bin/:
 	@mkdir -p $@
@@ -268,7 +271,7 @@ bin/:
 
 .PHONY: build-static
 
-build-static: tidy bin/spire-server-static bin/spire-agent-static bin/k8s-workload-registrar-static bin/oidc-discovery-provider-static
+build-static: tidy bin/spire-server-static bin/spire-agent-static bin/k8s-workload-registrar-static bin/oidc-discovery-provider-static bin/wlapi-csi-driver-static
 
 define binary_rule_static
 .PHONY: $1
@@ -291,6 +294,7 @@ $(eval $(call binary_rule_external_static,bin/spire-server-static,./cmd/spire-se
 $(eval $(call binary_rule_static,bin/spire-agent-static,./cmd/spire-agent))
 $(eval $(call binary_rule_static,bin/k8s-workload-registrar-static,./support/k8s/k8s-workload-registrar))
 $(eval $(call binary_rule_static,bin/oidc-discovery-provider-static,./support/oidc-discovery-provider))
+$(eval $(call binary_rule_static,bin/wlapi-csi-driver-static,./support/k8s/wlapi-csi-driver))
 
 #############################################################################
 # Test Targets
@@ -329,7 +333,7 @@ artifact: build
 #############################################################################
 
 .PHONY: images
-images: spire-server-image spire-agent-image k8s-workload-registrar-image oidc-discovery-provider-image
+images: spire-server-image spire-agent-image k8s-workload-registrar-image oidc-discovery-provider-image wlapi-csi-driver-image
 
 .PHONY: spire-server-image
 spire-server-image: Dockerfile
@@ -350,6 +354,11 @@ k8s-workload-registrar-image: Dockerfile
 oidc-discovery-provider-image: Dockerfile
 	docker build --build-arg goversion=$(go_version_full) --target oidc-discovery-provider -t oidc-discovery-provider .
 	docker tag oidc-discovery-provider:latest oidc-discovery-provider:latest-local
+
+.PHONY: wlapi-csi-driver-image
+wlapi-csi-driver-image: Dockerfile
+	docker build --build-arg goversion=$(go_version_full) --target wlapi-csi-driver -t wlapi-csi-driver .
+	docker tag wlapi-csi-driver:latest wlapi-csi-driver:latest-local
 
 #############################################################################
 # Docker Images FROM scratch
@@ -377,6 +386,11 @@ k8s-workload-registrar-scratch-image: Dockerfile
 oidc-discovery-provider-scratch-image: Dockerfile
 	docker build --build-arg goversion=$(go_version_full) --target oidc-discovery-provider-scratch -t oidc-discovery-provider-scratch -f Dockerfile.scratch .
 	docker tag oidc-discovery-provider-scratch:latest oidc-discovery-provider-scratch:latest-local
+
+.PHONY: wlapi-csi-driver-scratch-image
+wlapi-csi-driver-scratch-image: Dockerfile
+	docker build --build-arg goversion=$(go_version_full) --target wlapi-csi-driver-scratch -t wlapi-csi-driver-scratch -f Dockerfile.scratch .
+	docker tag wlapi-csi-driver-scratch:latest wlapi-csi-driver-scratch:latest-local
 
 #############################################################################
 # Code cleanliness
