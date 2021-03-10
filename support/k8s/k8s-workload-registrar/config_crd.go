@@ -13,28 +13,34 @@ import (
 )
 
 const (
-	defaultAddSvcDNSName   = true
-	defaultPodController   = true
-	defaultMetricsBindAddr = ":8080"
-	defaultWebhookCertDir  = "/run/spire/serving-certs"
-	defaultWebhookPort     = 9443
-	namespaceFile          = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+	defaultAddSvcDNSName     = true
+	defaultAddSvcAcctDNSName = true
+	defaultPodController     = true
+	defaultClusterDomain     = "cluster.local"
+	defaultMetricsBindAddr   = ":8080"
+	defaultWebhookCertDir    = "/run/spire/serving-certs"
+	defaultWebhookPort       = 9443
+	namespaceFile            = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
 type CRDMode struct {
 	CommonMode
-	AddSvcDNSName   bool   `hcl:"add_svc_dns_name"`
-	LeaderElection  bool   `hcl:"leader_election"`
-	MetricsBindAddr string `hcl:"metrics_bind_addr"`
-	PodController   bool   `hcl:"pod_controller"`
-	WebhookEnabled  bool   `hcl:"webhook_enabled"`
-	WebhookCertDir  string `hcl:"webhook_cert_dir"`
-	WebhookPort     int    `hcl:"webhook_port"`
+	AddSvcDNSName     bool   `hcl:"add_svc_dns_name"`
+	AddSvcAcctDNSName bool   `hcl:"add_svc_acct_dns_name"`
+	LeaderElection    bool   `hcl:"leader_election"`
+	MetricsBindAddr   string `hcl:"metrics_bind_addr"`
+	PodController     bool   `hcl:"pod_controller"`
+	ClusterDomain     string `hcl:"cluster_domain"`
+	WebhookEnabled    bool   `hcl:"webhook_enabled"`
+	WebhookCertDir    string `hcl:"webhook_cert_dir"`
+	WebhookPort       int    `hcl:"webhook_port"`
 }
 
 func (c *CRDMode) ParseConfig(hclConfig string) error {
 	c.PodController = defaultPodController
 	c.AddSvcDNSName = defaultAddSvcDNSName
+	c.AddSvcAcctDNSName = defaultAddSvcAcctDNSName
+	c.ClusterDomain = defaultClusterDomain
 	if err := hcl.Decode(c, hclConfig); err != nil {
 		return errs.New("unable to decode configuration: %v", err)
 	}
@@ -126,6 +132,8 @@ func (c *CRDMode) Run(ctx context.Context) error {
 			PodAnnotation:      c.PodAnnotation,
 			Scheme:             mgr.GetScheme(),
 			TrustDomain:        c.TrustDomain,
+			AddSvcAcctDNSName:  c.AddSvcAcctDNSName,
+			ClusterDomain:      c.ClusterDomain,
 		}).SetupWithManager(mgr)
 		if err != nil {
 			return err

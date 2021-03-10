@@ -17,6 +17,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 	spiffeidv1beta1 "github.com/spiffe/spire/support/k8s/k8s-workload-registrar/mode-crd/api/spiffeid/v1beta1"
@@ -41,6 +42,8 @@ type PodReconcilerConfig struct {
 	PodAnnotation      string
 	Scheme             *runtime.Scheme
 	TrustDomain        string
+	AddSvcAcctDNSName  bool
+	ClusterDomain      string
 }
 
 // PodReconciler holds the runtime configuration and state of this controller
@@ -117,6 +120,10 @@ func (r *PodReconciler) updateorCreatePodEntry(ctx context.Context, pod *corev1.
 				NodeName:  pod.Spec.NodeName,
 			},
 		},
+	}
+	if r.c.AddSvcAcctDNSName {
+		spiffeID.Spec.DnsNames = append(spiffeID.Spec.DnsNames,
+			fmt.Sprintf("%v.%v.svc.%v", pod.Spec.ServiceAccountName, pod.Namespace, r.c.ClusterDomain))
 	}
 	err := setOwnerRef(pod, spiffeID, r.c.Scheme)
 	if err != nil {
