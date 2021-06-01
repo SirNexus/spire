@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-workload
+  namespace: spire
+  labels:
+    app: example-workload
+spec:
+  selector:
+    matchLabels:
+      app: example-workload
+  template:
+    metadata:
+      namespace: spire
+      labels:
+        app: example-workload
+        spire-workload: example-workload
+    spec:
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: example-workload
+          image: example-workload:latest-local
+          volumeMounts:
+            - name: spire-agent-socket
+              mountPath: /run/spire/sockets
+              readOnly: true
+      volumes:
+        - name: spire-agent-socket
+          csi:
+            driver: "wlapi-mounter.spire.spiffe.io"
+
