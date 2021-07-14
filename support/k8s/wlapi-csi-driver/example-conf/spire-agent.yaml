@@ -106,8 +106,8 @@ spec:
       serviceAccountName: spire-agent
       containers:
         - name: spire-agent
-          image: spire-agent:latest-local
-          imagePullPolicy: Never
+          image: gcr.io/spiffe-io/spire-agent:0.12.3
+          imagePullPolicy: IfNotPresent
           args: ["-config", "/run/spire/config/agent.conf"]
           volumeMounts:
             - name: spire-config
@@ -121,8 +121,8 @@ spec:
             - name: wlapi-socket-dir
               mountPath: /run/spire/sockets
         - name: wlapi-csi-driver
-          image: wlapi-csi-driver:latest-local
-          imagePullPolicy: Never
+          image: gcr.io/f5-gcs-7899-ptg-nginx-mesh-dev/wlapi-csi-driver:aicarson
+          imagePullPolicy: IfNotPresent
           args: [
             "-node-id", "WHATEV",
             "-wlapi-socket-dir", "/wlapi",
